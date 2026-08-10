@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TasaFlexi · Tasación rápida de vehículos</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --bg2:#f7f8fa; --card:#ffffff; --card2:#f4f5f7;
+    --line:#e4e7ec; --txt:#282828; --muted:#6b7280; --muted2:#9aa3af;
+    --accent:#e85818; --accent2:#ff6a2a; --blue:#2f6fd6; --blue-d:#2456ad;
+    --green:#1f9d55; --green-d:#178048; --red:#e02424; --amber:#b45309;
+    --dark:#282828;
+    --radius:14px; --shadow:0 4px 16px rgba(40,40,40,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--txt); min-height:100vh; padding-bottom:40px;
+  }
+  a{color:var(--blue)}
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(255,255,255,.95); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); padding:12px 16px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:21px;letter-spacing:-.5px}
+  .logo .mark{
+    width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+    background:var(--accent);color:#fff;font-weight:900;font-size:18px;
+    box-shadow:0 4px 12px rgba(232,88,24,.35);
+  }
+  .logo .wm b{color:var(--dark)}
+  .logo .wm i{color:var(--accent);font-style:normal}
+  .logo small{display:block;font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-top:-3px}
+  .brandlogo{height:27px;width:auto;display:block}
+  .apptag{font-size:10.5px;font-weight:800;color:var(--accent);background:#fdece3;border:1px solid #f6c9b0;border-radius:20px;padding:2px 9px;letter-spacing:.3px}
+  .loginlogo{height:44px;width:auto;display:block;margin:0 auto 12px}
+  .spacer{flex:1}
+  .roleswap{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:3px}
+  .roleswap button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:13px;padding:7px 12px;border-radius:8px;cursor:pointer;transition:.15s}
+  .roleswap button.on{background:var(--accent);color:#fff}
+  main{max-width:560px;margin:0 auto;padding:16px}
+  .view{display:none;animation:fade .25s ease}
+  .view.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.title{font-size:20px;margin:6px 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px}
+  label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:0 0 6px;letter-spacing:.2px}
+  .field{margin-bottom:14px}
+  .row{display:flex;gap:10px}
+  .row .field{flex:1}
+  input,select,textarea{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--txt);border-radius:11px;padding:13px 12px;font-size:15px;font-family:inherit;outline:none;transition:.15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,88,24,.15)}
+  input::placeholder{color:var(--muted2)}
+  select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2393a4b8' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+  .matricula-input{text-transform:uppercase;letter-spacing:2px;font-weight:800;font-size:18px;text-align:center}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;transition:.15s}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.primary:active{transform:scale(.98)}
+  .btn.blue{background:var(--blue);color:#fff}
+  .btn.green{background:var(--green);color:#fff}
+  .btn.ghost{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+  .upload{border:2px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s;background:var(--bg2)}
+  .upload:active{border-color:var(--accent);color:var(--txt)}
+  .upload .big{font-size:26px;margin-bottom:4px}
+  .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .thumbs .t{position:relative;width:64px;height:64px;border-radius:9px;overflow:hidden;border:1px solid var(--line)}
+  .thumbs .t img{width:100%;height:100%;object-fit:cover}
+  .thumbs .t span{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);border-radius:6px;width:18px;height:18px;display:grid;place-items:center;font-size:11px;cursor:pointer}
+  .filechip{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px}
+  .filechip .pdf{background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:5px}
+  .dup{border-radius:12px;padding:13px 14px;margin-bottom:14px;font-size:13.5px;display:none}
+  .dup.warn{display:block;background:#fff6ea;border:1px solid #f3cd9a;color:#92400e}
+  .dup.ok{display:block;background:#eaf7f0;border:1px solid #b3ddc6;color:#157347}
+  .dup b{color:var(--dark)}
+  .dup .hist{margin-top:10px;border-top:1px dashed rgba(146,64,14,.25);padding-top:10px}
+  .dup .hline{display:flex;justify-content:space-between;gap:8px;padding:5px 0;font-size:12.5px;color:#8a6d3b}
+  .dup .hline b{color:#92400e}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:4px 9px;border-radius:20px;letter-spacing:.3px}
+  .b-pend{background:#fff1e0;color:#b45309}
+  .b-done{background:#e6f6ee;color:var(--green)}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:11px;cursor:pointer;transition:.15s}
+  .item:active{transform:scale(.99);border-color:var(--accent)}
+  .item .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .item .veh{font-weight:800;font-size:15px}
+  .item .meta{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .plate{font-family:monospace;font-weight:800;letter-spacing:1px;background:var(--dark);border:1px solid var(--dark);border-radius:6px;padding:3px 8px;font-size:12px;color:#fff;white-space:nowrap}
+  .price-tag{font-weight:900;font-size:16px;color:var(--accent)}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--muted);flex-shrink:0}
+  .kv .v{font-weight:700;text-align:right}
+  .gallery{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin:4px 0 6px}
+  .gallery img{height:96px;border-radius:10px;border:1px solid var(--line)}
+  .horq{display:flex;gap:10px;align-items:flex-end}
+  .horq .field{flex:1;margin-bottom:0}
+  .backbtn{background:none;border:0;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;padding:4px 0;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
+  .empty .big{font-size:34px;margin-bottom:8px;opacity:.5}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;font-weight:800;padding:13px 20px;border-radius:12px;box-shadow:0 8px 24px rgba(40,40,40,.3);opacity:0;transition:.3s;z-index:50;font-size:14px;max-width:90%}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .cochesnet{display:flex;align-items:center;gap:10px;background:#eaf7f0;border:1px solid #b3ddc6;border-radius:12px;padding:14px;text-decoration:none;color:var(--txt)}
+  .cochesnet .cn-ico{width:38px;height:38px;background:var(--green);border-radius:9px;display:grid;place-items:center;font-size:20px;flex-shrink:0}
+  .cochesnet .cn-t{flex:1}
+  .cochesnet .cn-t b{display:block;font-size:14px}
+  .cochesnet .cn-t small{color:var(--muted);font-size:11.5px}
+  .cochesnet .arrow{color:var(--green);font-size:20px}
+  .demo-note{background:#fff6ea;border:1px solid #f3cd9a;border-radius:10px;padding:10px 12px;font-size:12px;color:#92400e;margin-bottom:14px}
+  .seclabel{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted2);text-transform:uppercase;margin:2px 0 10px}
+  /* LEAD */
+  .leadcard{background:linear-gradient(135deg,#282828,#3c3c3c);border-radius:14px;padding:15px 16px;margin-bottom:14px;color:#fff;box-shadow:var(--shadow)}
+  .leadcard .lrow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .leadcard .lref{font-family:monospace;font-weight:900;font-size:21px;letter-spacing:1px}
+  .leadcard .lsub{font-size:11px;color:#c9ccd1;letter-spacing:.3px}
+  .leadcard .lprice{font-weight:900;font-size:19px;color:var(--accent2)}
+  .leadcard .ldiv{border-top:1px solid rgba(255,255,255,.14);margin-top:11px;padding-top:9px;font-size:11.5px;color:#c9ccd1;display:flex;flex-wrap:wrap;gap:4px 14px}
+  .lead-line{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:var(--accent);background:#fdece3;border:1px solid #f6c9b0;padding:2px 7px;border-radius:6px;margin-top:8px}
+  /* Chat */
+  .chat{display:flex;flex-direction:column;gap:9px;margin-bottom:12px;max-height:320px;overflow-y:auto;padding:2px}
+  .msg{max-width:84%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.38}
+  .msg .who{font-size:10.5px;font-weight:800;letter-spacing:.3px;margin-bottom:2px}
+  .msg .tm{font-size:10px;color:var(--muted2);margin-top:3px;text-align:right}
+  .msg.cap{align-self:flex-start;background:#f0f2f5;border:1px solid var(--line);border-bottom-left-radius:4px}
+  .msg.cap .who{color:var(--blue)}
+  .msg.tas{align-self:flex-end;background:#fff0e8;border:1px solid #f6c9b0;border-bottom-right-radius:4px}
+  .msg.tas .who{color:var(--accent)}
+  .msg.sys{align-self:center;background:#eef1f4;color:var(--muted);font-size:12px;border-radius:20px;padding:6px 13px;text-align:center;max-width:92%}
+  .chatbar{display:flex;gap:8px;align-items:flex-end}
+  .chatbar textarea{flex:1;resize:none}
+  .chatbar button{flex-shrink:0;width:auto;padding:13px 18px}
+  /* Login / identidad */
+  .login-wrap{max-width:400px;margin:7vh auto 0;padding:0 4px;text-align:center}
+  .login-logo{font-size:32px;font-weight:900;letter-spacing:-1px;margin:14px 0 4px}
+  .login-mark{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;margin:0 auto;background:var(--accent);color:#fff;font-weight:900;font-size:28px;box-shadow:0 6px 16px rgba(232,88,24,.35)}
+  .gbtn{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;background:#fff;border:1px solid #dcdfe4;border-radius:12px;padding:13px;font-size:15px;font-weight:700;color:#3c4043;cursor:pointer;margin-top:4px}
+  .gbtn:active{background:#f7f8fa}
+  .userchip{display:flex;align-items:center;gap:7px;cursor:pointer;background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:3px 11px 3px 3px}
+  .userchip .av{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+  .userchip .em{font-size:11px;color:var(--muted);font-weight:700;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @media(max-width:480px){.userchip .em{display:none}}
+  .rolebadge{font-size:11px;font-weight:800;padding:5px 11px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
+  .rolebadge.cap{background:#eaf1fb;color:var(--blue)}
+  .rolebadge.tas{background:#fdece3;color:var(--accent)}
+  .demolabel{font-size:9px;font-weight:900;letter-spacing:1px;color:var(--muted2);border:1px solid var(--line);border-radius:5px;padding:2px 5px}
+  @media(max-width:480px){.demolabel{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img class="brandlogo" src="data:image/png;base64,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" alt="Flexicar">
+    <span class="apptag">TasaFlexi</span>
+  </div>
+  <div class="spacer"></div>
+  <div id="hdrUser" style="display:none;align-items:center;gap:10px">
+    <span class="demolabel">DEMO</span>
+    <div class="roleswap" title="Solo para la demo: cambia de vista al instante">
+      <button id="rCap" class="on" onclick="demoView('cap')">Captador</button>
+      <button id="rTas" onclick="demoView('tas')">Tasador</button>
+    </div>
+    <div id="userchip" class="userchip" onclick="logout()" title="Cerrar sesión"></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ LOGIN ============ -->
+  <section id="v-login" class="view on">
+    <div class="login-wrap">
+      <img class="loginlogo" src="data:image/png;base64,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" alt="Flexicar">
+      <div class="login-logo"><span style="color:var(--dark)">Tasa</span><span style="color:var(--accent)">Flexi</span></div>
+      <p class="sub" style="text-align:center;margin-bottom:18px">Identifícate con tu cuenta de Gmail para guardar tu historial de captaciones.</p>
+      <div class="card" style="text-align:left">
+        <div class="field"><label>Correo corporativo</label><input id="loginEmail" type="email" value="captador.sevilla@flexicar.es" placeholder="tunombre@flexicar.es"><p class="hint" style="margin-top:6px">🔒 Solo cuentas <b>@flexicar.es</b></p></div>
+        <button class="gbtn" onclick="login()">
+          <svg class="gicon" width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continuar con Google Workspace
+        </button>
+        <p class="hint" style="text-align:center;margin-top:12px">Demo: simula el acceso. En la versión real será el inicio de sesión oficial de Google restringido al dominio flexicar.es.</p>
+      </div>
+      <div class="seclabel" style="text-align:center;margin:16px 0 8px">O ACCESO RÁPIDO PARA LA DEMO</div>
+      <div class="row" style="gap:10px">
+        <button class="btn ghost" style="flex:1" onclick="demoLogin('cap')">📋 Ver como Captador</button>
+        <button class="btn ghost" style="flex:1" onclick="demoLogin('tas')">🛠️ Ver como Tasador</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CAPTADOR: NUEVA ============ -->
+  <section id="v-cap" class="view">
+    <h2 class="title">Nueva tasación</h2>
+    <p class="sub">Rellena la ficha y envíala. El tasador te devolverá la horquilla de precio.</p>
+    <div class="demo-note">💡 Demo: escribe la matrícula <b>1234BCD</b> para ver el aviso de coche duplicado.</div>
+
+    <!-- Identificación -->
+    <div class="card">
+      <h3><span>🔎</span> Identificación</h3>
+      <div class="field">
+        <label>Matrícula</label>
+        <input id="matricula" class="matricula-input" maxlength="9" placeholder="0000 XXX" oninput="checkDup()">
+      </div>
+      <div id="dupBanner" class="dup"></div>
+      <div class="row">
+        <div class="field"><label>Bastidor (VIN)</label><input id="bastidor" maxlength="17" placeholder="17 caracteres" style="text-transform:uppercase"></div>
+        <div class="field"><label>Método de captación</label>
+          <select id="metodo">
+            <option>Captación</option><option>Puerta</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Origen del lead</label><input id="lead" placeholder="Ej. Wallapop, coches.net, cliente tienda, referido…"></div>
+    </div>
+
+    <!-- Vehículo -->
+    <div class="card">
+      <h3><span>🚗</span> Datos del vehículo</h3>
+      <div class="row">
+        <div class="field"><label>Marca</label>
+          <select id="marca" onchange="fillModelos()"><option value="">Selecciona…</option></select>
+        </div>
+        <div class="field"><label>Modelo</label>
+          <select id="modelo" onchange="checkOtroModelo()"><option value="">—</option></select>
+        </div>
+      </div>
+      <div id="marcaLibreWrap" class="field" style="display:none"><label>Escribe la marca</label><input id="marcaLibre" placeholder="Marca no listada"></div>
+      <div id="modeloLibreWrap" class="field" style="display:none"><label>Escribe el modelo</label><input id="modeloLibre" placeholder="Modelo no listado"></div>
+      <div class="row">
+        <div class="field"><label>Fecha de matriculación</label><input id="fechaMat" type="month"></div>
+        <div class="field"><label>Kilómetros</label><input id="km" type="number" inputmode="numeric" placeholder="Ej. 85000"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Caja de cambios</label>
+          <select id="cambio"><option>Manual</option><option>Automático</option></select></div>
+        <div class="field"><label>Combustible</label>
+          <select id="combustible"><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Híbrido enchufable</option><option>Eléctrico</option><option>GLP</option><option>GNC</option></select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Motor</label><input id="motor" placeholder="Ej. 2.0 TDI"></div>
+        <div class="field"><label>Potencia (CV)</label><input id="potencia" type="number" inputmode="numeric" placeholder="Ej. 150"></div>
+      </div>
+      <div class="field"><label>Etiqueta DGT</label>
+        <select id="etiqueta"><option>0 (Cero)</option><option>ECO</option><option>C</option><option>B</option><option>Sin etiqueta</option></select></div>
+    </div>
+
+    <!-- Estado / carrocería -->
+    <div class="card">
+      <h3><span>🔧</span> Estado del vehículo</h3>
+      <div class="row">
+        <div class="field"><label>Piezas a pintar</label><input id="piezasPintura" placeholder="Nº o descripción"></div>
+        <div class="field"><label>Piezas de chapa</label><input id="piezasChapa" placeholder="Nº o descripción"></div>
+      </div>
+      <div class="field"><label>Neumáticos</label>
+        <select id="neumaticos"><option>Nuevos (&gt;80%)</option><option>Buen estado (50-80%)</option><option>Desgaste medio (25-50%)</option><option>A cambiar (&lt;25%)</option></select></div>
+      <div class="row">
+        <div class="field"><label>Nº propietarios</label><input id="propietarios" type="number" inputmode="numeric" placeholder="Ej. 1"></div>
+        <div class="field"><label>Nº de llaves</label>
+          <select id="llaves"><option>1</option><option>2</option><option>3 o más</option></select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Mantenimientos al día</label>
+          <select id="mantAlDia"><option>Sí</option><option>No</option><option>Parcial</option></select></div>
+        <div class="field"><label>Libro de mantenimiento</label>
+          <select id="libroMant"><option>Disponible</option><option>No disponible</option><option>Digital</option></select></div>
+      </div>
+      <div class="field"><label>Fecha próxima ITV</label><input id="proxItv" type="month"></div>
+    </div>
+
+    <!-- Comercial -->
+    <div class="card">
+      <h3><span>💬</span> Información comercial</h3>
+      <div class="field"><label>Idea de precio (expectativa del cliente)</label><input id="idea" type="number" inputmode="numeric" placeholder="Ej. 14000 €"></div>
+      <div class="field"><label>¿Por qué lo vende?</label><input id="porqueVende" placeholder="Ej. cambio a coche más grande"></div>
+      <div class="row">
+        <div class="field"><label>¿Cuándo entrega el vehículo?</label><input id="entrega" placeholder="Ej. inmediata / en 15 días"></div>
+        <div class="field"><label>Financiado / cargas</label>
+          <select id="financiado"><option>Libre de cargas</option><option>Financiado</option><option>Reserva de dominio</option><option>Embargo</option><option>Por confirmar</option></select></div>
+      </div>
+    </div>
+
+    <!-- Fotos -->
+    <div class="card">
+      <h3><span>📸</span> Fotos del vehículo</h3>
+      <div class="upload" onclick="document.getElementById('fotos').click()">
+        <div class="big">📷</div><div>Toca para hacer fotos o subirlas</div>
+      </div>
+      <input id="fotos" type="file" accept="image/*" multiple capture="environment" hidden onchange="addFotos(event)">
+      <div id="thumbs" class="thumbs"></div>
+    </div>
+
+    <!-- Carfax -->
+    <div class="card">
+      <h3><span>📄</span> Informe Carfax (PDF)</h3>
+      <div class="upload" onclick="document.getElementById('carfax').click()">
+        <div class="big">📎</div><div>Adjuntar PDF del Carfax</div>
+      </div>
+      <input id="carfax" type="file" accept="application/pdf" hidden onchange="addCarfax(event)">
+      <div id="carfaxChip"></div>
+    </div>
+
+    <button class="btn primary" style="margin-bottom:14px" onclick="enviarCaptacion()">📤 Enviar al tasador</button>
+    <button class="btn ghost" onclick="renderCapList();showView('cap-list')">Ver mis captaciones</button>
+  </section>
+
+  <!-- CAPTADOR: LISTA -->
+  <section id="v-cap-list" class="view">
+    <button class="backbtn" onclick="showView('cap')">‹ Nueva captación</button>
+    <h2 class="title">Mis captaciones</h2>
+    <p class="sub">Estado y horquilla que te ha puesto el tasador.</p>
+    <div id="capList"></div>
+  </section>
+
+  <!-- TASADOR: LISTA -->
+  <section id="v-tas" class="view">
+    <h2 class="title">Bandeja de tasación</h2>
+    <p class="sub">Pendientes de valorar. Toca una para analizar y poner precio.</p>
+    <div id="tasList"></div>
+  </section>
+
+  <!-- TASADOR: DETALLE -->
+  <section id="v-detail" class="view">
+    <button class="backbtn" onclick="showView(role==='tas'?'tas':'cap-list')">‹ Volver</button>
+    <div id="detail"></div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============ CATÁLOGO DE MARCAS Y MODELOS (mercado España) ============ */
+const MODELOS = {
+"Abarth":["500","595","695","124 Spider"],
+"Alfa Romeo":["Giulietta","Giulia","Stelvio","MiTo","Tonale","159","147","Brera"],
+"Aston Martin":["DB11","DB12","Vantage","DBX"],
+"Audi":["A1","A2","A3","A4","A4 Allroad","A5","A6","A6 Allroad","A7","A8","Q2","Q3","Q3 Sportback","Q4 e-tron","Q5","Q5 Sportback","Q7","Q8","TT","R8","e-tron","e-tron GT","RS3","RS4","RS6","S3","S4","S5"],
+"BMW":["Serie 1","Serie 2","Serie 2 Active Tourer","Serie 2 Gran Coupé","Serie 3","Serie 4","Serie 5","Serie 6","Serie 7","Serie 8","X1","X2","X3","X4","X5","X6","X7","Z4","i3","i4","iX","iX1","iX3","M2","M3","M4","M5"],
+"Bentley":["Continental","Bentayga","Flying Spur"],
+"BYD":["Atto 3","Dolphin","Seal","Han","Tang","Seal U"],
+"Chevrolet":["Aveo","Cruze","Spark","Captiva","Orlando","Camaro","Corvette"],
+"Chrysler":["300C","Voyager","PT Cruiser"],
+"Citroën":["C1","C3","C3 Aircross","C4","C4 X","C4 Cactus","C5","C5 Aircross","C5 X","Berlingo","C-Elysée","C-Zero","Grand C4 SpaceTourer","C4 SpaceTourer","ë-C4","AMI"],
+"Cupra":["Ateca","Leon","Formentor","Born","Tavascan","Terramar"],
+"Dacia":["Sandero","Sandero Stepway","Duster","Jogger","Spring","Lodgy","Dokker","Logan"],
+"DS":["DS 3","DS 3 Crossback","DS 4","DS 5","DS 7","DS 7 Crossback","DS 9"],
+"Dodge":["Nitro","Journey","Challenger"],
+"Ferrari":["Roma","Portofino","296","F8","SF90","Purosangue"],
+"Fiat":["500","500L","500X","500e","Panda","Tipo","Punto","Doblò","500C","600","Topolino"],
+"Ford":["Fiesta","Focus","Puma","Kuga","Mondeo","EcoSport","Ka+","C-Max","S-Max","Galaxy","Edge","Explorer","Mustang","Mustang Mach-E","Tourneo Connect","Tourneo Courier","Ranger","Transit","Transit Custom"],
+"Honda":["Jazz","Civic","HR-V","CR-V","ZR-V","e:Ny1","Honda e","Accord"],
+"Hyundai":["i10","i20","i30","Bayon","Kona","Tucson","Santa Fe","Ioniq","Ioniq 5","Ioniq 6","Kona Electric","Nexo","i40","ix35"],
+"Infiniti":["Q30","Q50","QX30","QX70"],
+"Isuzu":["D-Max"],
+"Jaguar":["XE","XF","XJ","E-Pace","F-Pace","I-Pace","F-Type"],
+"Jeep":["Renegade","Compass","Cherokee","Grand Cherokee","Wrangler","Avenger","Gladiator"],
+"Kia":["Picanto","Rio","Ceed","ProCeed","XCeed","Stonic","Niro","Sportage","Sorento","EV6","EV9","Soul","e-Niro","Carens","Optima"],
+"Lamborghini":["Huracán","Urus","Revuelto"],
+"Lancia":["Ypsilon","Delta","Musa"],
+"Land Rover":["Defender","Discovery","Discovery Sport","Range Rover","Range Rover Sport","Range Rover Evoque","Range Rover Velar","Freelander"],
+"Leapmotor":["T03","C10"],
+"Lexus":["CT","IS","ES","LS","UX","NX","RX","RZ","LC","RC"],
+"Lynk & Co":["01"],
+"Maserati":["Ghibli","Quattroporte","Levante","Grecale","MC20","GranTurismo"],
+"Maxus":["Euniq","Deliver 9","T90","MIFA 9"],
+"Mazda":["Mazda2","Mazda3","Mazda6","CX-3","CX-30","CX-5","CX-60","MX-30","MX-5"],
+"Mercedes-Benz":["Clase A","Clase B","Clase C","Clase E","Clase S","CLA","CLS","GLA","GLB","GLC","GLE","GLS","Clase G","EQA","EQB","EQC","EQE","EQS","EQV","Clase V","Vito","Citan","SL","AMG GT","Clase A Sedán"],
+"MG":["MG3","MG4","MG5","ZS","HS","Marvel R","MG3 Hybrid","Cyberster","EHS"],
+"Mini":["Cooper","Cooper 3 puertas","Cooper 5 puertas","Cabrio","Clubman","Countryman","Electric","Paceman","John Cooper Works"],
+"Mitsubishi":["Space Star","ASX","Eclipse Cross","Outlander","L200","Montero"],
+"Nissan":["Micra","Note","Leaf","Juke","Qashqai","X-Trail","Ariya","Townstar","Navara","370Z","GT-R","Pulsar"],
+"Omoda":["5"],
+"Opel":["Corsa","Corsa-e","Astra","Astra Sports Tourer","Crossland","Grandland","Mokka","Mokka-e","Insignia","Combo","Combo Life","Zafira","Zafira Life","Vivaro","Adam","Karl","Rocks-e"],
+"Peugeot":["108","208","e-208","2008","e-2008","308","408","3008","5008","508","Rifter","Partner","Traveller","Expert","RCZ","301"],
+"Porsche":["911","718 Cayman","718 Boxster","Panamera","Macan","Cayenne","Taycan"],
+"Renault":["Twingo","Clio","Captur","Arkana","Megane","Megane E-Tech","Austral","Espace","Scenic","Kadjar","Koleos","Zoe","Kangoo","Express","Trafic","Talisman","Symbioz","Rafale"],
+"Seat":["Mii","Ibiza","Arona","Leon","Ateca","Tarraco","Alhambra","Toledo","Altea"],
+"Skoda":["Citigo","Fabia","Scala","Rapid","Octavia","Superb","Kamiq","Karoq","Kodiaq","Enyaq","Enyaq Coupé","Elroq"],
+"Smart":["ForTwo","ForFour","#1","#3"],
+"SsangYong":["Tivoli","Korando","Rexton","XLV","Musso","Torres"],
+"Subaru":["Impreza","XV","Forester","Outback","BRZ","Solterra"],
+"Suzuki":["Ignis","Swift","Baleno","Vitara","S-Cross","Jimny","Across","Swace"],
+"Tesla":["Model 3","Model Y","Model S","Model X"],
+"Toyota":["Aygo","Aygo X","Yaris","Yaris Cross","Corolla","Corolla Cross","C-HR","RAV4","Highlander","Prius","Camry","bZ4X","Land Cruiser","Hilux","Proace","Proace City","GR86","GR Yaris","Supra"],
+"Volkswagen":["up!","Polo","Golf","T-Cross","Taigo","T-Roc","Tiguan","Tiguan Allspace","Touran","Passat","Arteon","Touareg","ID.3","ID.4","ID.5","ID.7","ID. Buzz","Caddy","Multivan","Transporter","California","Sharan","Beetle","Scirocco"],
+"Volvo":["V40","V60","V90","S60","S90","XC40","XC60","XC90","C40","EX30","EX90","C30"]
+};
+
+/* ============ Base de datos (memoria) ============ */
+let db = [
+  {id:1, matricula:"1234BCD", marca:"Volkswagen", modelo:"Golf", bastidor:"WVWZZZ1KZAW000001", metodo:"Captación", lead:"coches.net",
+   fechaMat:"2019-03", km:96000, cambio:"Manual", combustible:"Diésel", motor:"2.0 TDI", potencia:150, etiqueta:"C",
+   piezasPintura:"2 (aleta y puerta)", piezasChapa:"0", neumaticos:"Desgaste medio (25-50%)", propietarios:2, llaves:"2",
+   mantAlDia:"Sí", libroMant:"Disponible", proxItv:"2026-11", idea:13000, porqueVende:"Cambio a SUV", entrega:"En 15 días", financiado:"Libre de cargas",
+   captador:"Tienda Sevilla", captadorEmail:"captador.sevilla@flexicar.es", estado:"tasado", hMin:11500, hMax:12800, notas:"Precio ajustado por km altos.", fecha:"05/08/2026 · 18:20", fotos:[], carfax:"carfax_1234BCD.pdf",
+   leadRef:"L-000001", chat:[
+     {autor:"cap", nombre:"Tienda Sevilla", texto:"El cliente pide 13.000 €. ¿Hasta dónde podemos llegar?", hora:"05/08 18:22"},
+     {autor:"tas", nombre:"Tasador central", texto:"Con esos km lo veo en 12.500 € como tope. Mándame foto del bajo de la aleta antes de cerrar.", hora:"05/08 18:40"},
+     {autor:"sys", texto:"📌 Horquilla guardada: 11.500 € – 12.800 €"}
+   ]},
+  {id:2, matricula:"7788KLM", marca:"Seat", modelo:"Leon", bastidor:"VSSZZZ5FZLR000002", metodo:"Puerta", lead:"Wallapop",
+   fechaMat:"2021-06", km:41000, cambio:"Manual", combustible:"Gasolina", motor:"1.5 TSI", potencia:150, etiqueta:"C",
+   piezasPintura:"0", piezasChapa:"0", neumaticos:"Buen estado (50-80%)", propietarios:1, llaves:"2",
+   mantAlDia:"Sí", libroMant:"Disponible", proxItv:"2027-06", idea:19000, porqueVende:"Se va al extranjero", entrega:"Inmediata", financiado:"Por confirmar",
+   captador:"Tienda Málaga", captadorEmail:"captador.malaga@flexicar.es", estado:"pendiente", hMin:null, hMax:null, notas:"", fecha:"07/08/2026 · 09:05", fotos:[], carfax:"carfax_7788KLM.pdf",
+   leadRef:"L-000002", chat:[
+     {autor:"cap", nombre:"Tienda Málaga", texto:"Coche muy cuidado, un solo dueño. Creo que tiene salida rápida.", hora:"07/08 09:07"}
+   ]}
+];
+let idSeq = 100, fotosBuffer = [], carfaxBuffer = null, role = 'cap', currentUser = null;
+
+/* ============ Roles: todos captadores salvo estos correos (tasadores) ============ */
+const TASADORES = new Set([
+  "cristian.fernandez@flexicar.es",
+  "carlos.infante@flexicar.es",
+  "kevin.yanez@flexicar.es",
+  "daniel.gesali@flexicar.es",
+  "jhiguera@flexicar.es"
+]);
+
+/* ============ Identidad / login (Gmail) ============ */
+function derivName(email){
+  const p=(email.split('@')[0]||'').replace(/[._-]+/g,' ').trim();
+  return p.split(' ').filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1)).join(' ')||email;
+}
+function login(){
+  const em=(document.getElementById('loginEmail').value||'').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){toast('⚠️ Introduce un correo válido');return;}
+  if(!/@flexicar\.es$/.test(em)){toast('⛔ Solo se permiten cuentas @flexicar.es');return;}
+  currentUser={email:em, nombre:derivName(em), role: TASADORES.has(em)?'tas':'cap'};
+  document.getElementById('hdrUser').style.display='flex';
+  document.getElementById('userchip').innerHTML=`<div class="av">${currentUser.nombre[0].toUpperCase()}</div><span class="em">${currentUser.email}</span>`;
+  applyRole();
+}
+function setUserChip(){
+  document.getElementById('hdrUser').style.display='flex';
+  document.getElementById('userchip').innerHTML=`<div class="av">${currentUser.nombre[0].toUpperCase()}</div><span class="em">${currentUser.email}</span>`;
+}
+function applyRole(){ setUserChip(); demoView(currentUser.role); }
+/* Conmutador de vista (solo para la demo) */
+function demoView(r){
+  role=r;
+  document.getElementById('rCap').classList.toggle('on',r==='cap');
+  document.getElementById('rTas').classList.toggle('on',r==='tas');
+  if(r==='tas'){renderTasList();showView('tas');}
+  else{renderCapList();showView('cap');}
+}
+/* Acceso rápido para la demo, sin escribir correo */
+function demoLogin(r){
+  const em = r==='tas' ? 'cristian.fernandez@flexicar.es' : 'captador.sevilla@flexicar.es';
+  currentUser={email:em, nombre:derivName(em), role:r};
+  setUserChip();
+  demoView(r);
+}
+function logout(){
+  currentUser=null;
+  document.getElementById('hdrUser').style.display='none';
+  showView('login');
+}
+
+/* ============ Utilidades ============ */
+function norm(m){return (m||"").toUpperCase().replace(/[^A-Z0-9]/g,"");}
+function fmtKm(k){return k?Number(k).toLocaleString('es-ES')+" km":"—";}
+function fmtEur(n){return (n||n===0)?Number(n).toLocaleString('es-ES')+" €":"—";}
+function fmtMonth(s){if(!s)return"—";const[y,m]=s.split("-");const M=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];return (M[parseInt(m)-1]||"")+" "+y;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+function slug(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");}
+function anioDe(t){return t.fechaMat?parseInt(t.fechaMat.split("-")[0]):null;}
+function cochesUrl(t){
+  const makeSlug=slug(t.marca).replace(/_/g,"-");
+  const modelSlug=slug(t.modelo);
+  let url=`https://www.coches.net/${makeSlug}-${modelSlug}/segunda-mano/`;
+  const q=[],a=anioDe(t);
+  if(a){q.push(`YearFrom=${a-1}`);q.push(`YearTo=${a+1}`);}
+  if(t.km){q.push(`KmTo=${Math.round(t.km*1.25)}`);}
+  if(q.length)url+="?"+q.join("&");
+  return url;
+}
+
+/* ============ Init ============ */
+function init(){
+  const marca=document.getElementById('marca');
+  Object.keys(MODELOS).sort((a,b)=>a.localeCompare(b,'es')).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;marca.appendChild(o);});
+  const otra=document.createElement('option');otra.value="__otra__";otra.textContent="➕ Otra marca…";marca.appendChild(otra);
+}
+function fillModelos(){
+  const marca=document.getElementById('marca').value;
+  const sel=document.getElementById('modelo');
+  const wrap=document.getElementById('marcaLibreWrap');
+  wrap.style.display = marca==="__otra__" ? "block":"none";
+  sel.innerHTML='<option value="">Selecciona…</option>';
+  (MODELOS[marca]||[]).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+  const otro=document.createElement('option');otro.value="__otro__";otro.textContent="➕ Otro modelo…";sel.appendChild(otro);
+  document.getElementById('modeloLibreWrap').style.display = marca==="__otra__" ? "block":"none";
+  checkOtroModelo();
+}
+function checkOtroModelo(){
+  const v=document.getElementById('modelo').value;
+  const marca=document.getElementById('marca').value;
+  document.getElementById('modeloLibreWrap').style.display = (v==="__otro__"||marca==="__otra__")?"block":"none";
+}
+
+/* ============ Duplicados ============ */
+function checkDup(){
+  const val=norm(document.getElementById('matricula').value);
+  const banner=document.getElementById('dupBanner');
+  if(val.length<5){banner.className='dup';banner.innerHTML='';return;}
+  const prev=db.filter(t=>norm(t.matricula)===val).sort((a,b)=>b.id-a.id);
+  if(prev.length===0){banner.className='dup ok';banner.innerHTML='✅ <b>Matrícula nueva.</b> No hay tasaciones previas de este vehículo.';return;}
+  const last=prev[0];
+  let hist='<div class="hist">';
+  prev.forEach(p=>{const precio=p.estado==='tasado'?`${fmtEur(p.hMin)} – ${fmtEur(p.hMax)}`:'sin precio (pendiente)';hist+=`<div class="hline"><span>${p.fecha} · ${p.captador}</span><b>${precio}</b></div>`;});
+  hist+='</div>';
+  banner.className='dup warn';
+  banner.innerHTML=`⚠️ <b>¡Coche ya tasado!</b> Esta matrícula tiene ${prev.length} registro(s). Último: <b>${last.marca} ${last.modelo}</b> por ${last.captador}.${hist}`;
+}
+
+/* ============ Fotos / Carfax ============ */
+function addFotos(e){[...e.target.files].forEach(f=>{const r=new FileReader();r.onload=ev=>{fotosBuffer.push(ev.target.result);renderThumbs();};r.readAsDataURL(f);});e.target.value='';}
+function renderThumbs(){document.getElementById('thumbs').innerHTML=fotosBuffer.map((src,i)=>`<div class="t"><img src="${src}"><span onclick="rmFoto(${i})">✕</span></div>`).join('');}
+function rmFoto(i){fotosBuffer.splice(i,1);renderThumbs();}
+function addCarfax(e){const f=e.target.files[0];if(!f)return;carfaxBuffer=f.name;document.getElementById('carfaxChip').innerHTML=`<div class="filechip"><span class="pdf">PDF</span> ${f.name} <span style="margin-left:auto;color:var(--green)">✓</span></div>`;}
+
+/* ============ Enviar ============ */
+function val(id){return document.getElementById(id).value;}
+function enviarCaptacion(){
+  let marca=val('marca'), modelo=val('modelo');
+  if(marca==="__otra__") marca=val('marcaLibre').trim();
+  if(modelo==="__otro__"||val('marca')==="__otra__") modelo=val('modeloLibre').trim();
+  const nid=++idSeq;
+  const t={
+    id:nid, leadRef:"L-"+String(nid).padStart(6,'0'), chat:[],
+    matricula:norm(val('matricula')), bastidor:val('bastidor').trim().toUpperCase(), metodo:val('metodo'), lead:val('lead'),
+    marca, modelo, fechaMat:val('fechaMat'), km:parseInt(val('km'))||0,
+    cambio:val('cambio'), combustible:val('combustible'), motor:val('motor'), potencia:parseInt(val('potencia'))||null, etiqueta:val('etiqueta'),
+    piezasPintura:val('piezasPintura'), piezasChapa:val('piezasChapa'), neumaticos:val('neumaticos'),
+    propietarios:parseInt(val('propietarios'))||null, llaves:val('llaves'), mantAlDia:val('mantAlDia'), libroMant:val('libroMant'), proxItv:val('proxItv'),
+    idea:parseInt(val('idea'))||null, porqueVende:val('porqueVende'), entrega:val('entrega'), financiado:val('financiado'),
+    captador:currentUser.nombre, captadorEmail:currentUser.email, estado:"pendiente", hMin:null, hMax:null, notas:"", fecha:"07/08/2026 · ahora",
+    fotos:[...fotosBuffer], carfax:carfaxBuffer
+  };
+  if(!t.matricula||t.matricula.length<5){toast("⚠️ Falta la matrícula");return;}
+  if(!marca||!modelo){toast("⚠️ Falta marca o modelo");return;}
+  db.push(t);
+  ['matricula','bastidor','lead','km','motor','potencia','piezasPintura','piezasChapa','propietarios','idea','porqueVende','entrega','marcaLibre','modeloLibre','fechaMat','proxItv'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('marca').value='';fillModelos();
+  fotosBuffer=[];carfaxBuffer=null;
+  document.getElementById('thumbs').innerHTML='';document.getElementById('carfaxChip').innerHTML='';
+  document.getElementById('dupBanner').className='dup';
+  toast("✅ Enviado al tasador");
+  renderCapList();renderTasList();showView('cap-list');
+}
+
+/* ============ Listas ============ */
+function estadoBadge(t){return t.estado==='tasado'?`<span class="badge b-done">✔ Tasado</span>`:`<span class="badge b-pend">⏳ Pendiente</span>`;}
+function fmtPlate(m){return m.length>4?m.slice(0,4)+" "+m.slice(4):m;}
+function itemHtml(t){
+  return `<div class="item" onclick="showDetail(${t.id})">
+    <div class="top"><div>
+      <div class="veh">${t.marca} ${t.modelo} <span style="color:var(--muted);font-weight:600">${anioDe(t)||''}</span></div>
+      <div class="meta">${fmtKm(t.km)} · ${t.combustible} · ${t.captador}</div>
+      <div class="lead-line">🎯 ${t.leadRef}${t.chat&&t.chat.filter(m=>m.autor!=='sys').length?` · 💬 ${t.chat.filter(m=>m.autor!=='sys').length}`:''}</div>
+    </div><span class="plate">${fmtPlate(t.matricula)}</span></div>
+    <div class="top" style="margin-top:10px;align-items:center">${estadoBadge(t)}
+      ${t.estado==='tasado'?`<span class="price-tag">${fmtEur(t.hMin)} – ${fmtEur(t.hMax)}</span>`:`<span class="meta">${t.fecha}</span>`}</div>
+  </div>`;
+}
+function renderCapList(){
+  const c=document.getElementById('capList');
+  if(!currentUser){c.innerHTML='';return;}
+  const mine=db.filter(t=>t.captadorEmail===currentUser.email).sort((a,b)=>b.id-a.id);
+  const head=`<div class="seclabel">📁 Historial de ${currentUser.email} · ${mine.length} captación(es)</div>`;
+  c.innerHTML=head+(mine.length?mine.map(itemHtml).join(''):'<div class="empty"><div class="big">📭</div>Aún no has enviado ninguna captación con esta cuenta.</div>');
+}
+function renderTasList(){
+  const pend=db.filter(t=>t.estado==='pendiente').sort((a,b)=>a.id-b.id);
+  const done=db.filter(t=>t.estado==='tasado').sort((a,b)=>b.id-a.id);
+  let html=pend.length?pend.map(itemHtml).join(''):'<div class="empty" style="padding:24px"><div class="big">☕</div>No hay coches pendientes.</div>';
+  if(done.length)html+=`<div class="seclabel" style="margin-top:20px">✔ Tasados recientemente</div>`+done.map(itemHtml).join('');
+  document.getElementById('tasList').innerHTML=html;
+}
+
+/* ============ Detalle ============ */
+function kv(k,v){return `<div class="kv"><span class="k">${k}</span><span class="v">${v||'—'}</span></div>`;}
+function showDetail(id){
+  const t=db.find(x=>x.id===id);if(!t)return;
+  const prev=db.filter(x=>norm(x.matricula)===norm(t.matricula)&&x.id!==t.id);
+  const editable=role==='tas';
+  let dupHtml='';
+  if(prev.length){dupHtml=`<div class="dup warn" style="display:block">⚠️ <b>Historial de esta matrícula:</b><div class="hist">${prev.map(p=>`<div class="hline"><span>${p.fecha} · ${p.captador}</span><b>${p.estado==='tasado'?fmtEur(p.hMin)+' – '+fmtEur(p.hMax):'pendiente'}</b></div>`).join('')}</div></div>`;}
+  const gal=t.fotos.length?`<div class="gallery">${t.fotos.map(s=>`<img src="${s}">`).join('')}</div>`:`<div class="meta" style="margin-bottom:8px">📷 Sin fotos adjuntas (demo).</div>`;
+  const carfax=t.carfax?`<div class="filechip"><span class="pdf">PDF</span> ${t.carfax} <span style="margin-left:auto;color:var(--blue)">Ver</span></div>`:`<div class="meta">Sin Carfax adjunto.</div>`;
+  const chatMsgs=(t.chat&&t.chat.length)?t.chat.map(m=>{
+    if(m.autor==='sys')return `<div class="msg sys">${m.texto}</div>`;
+    const who=m.autor==='tas'?'Tasador':'Captador';
+    return `<div class="msg ${m.autor}"><div class="who">${who}${m.nombre?' · '+m.nombre:''}</div>${m.texto}<div class="tm">${m.hora||''}</div></div>`;
+  }).join(''):`<div class="msg sys">Aún no hay mensajes. Empieza la conversación 👇</div>`;
+  const leadCard=`<div class="leadcard">
+      <div class="lrow">
+        <div><div class="lsub">🎯 LEAD · AQUÍ SE GUARDA EL PRECIO</div><div class="lref">${t.leadRef}</div></div>
+        <div style="text-align:right">${t.estado==='tasado'?`<div class="lprice">${fmtEur(t.hMin)} – ${fmtEur(t.hMax)}</div><div class="lsub">horquilla guardada</div>`:`<div class="lsub">sin precio aún</div>`}</div>
+      </div>
+      <div class="ldiv"><span>Origen: <b style="color:#fff">${t.lead||'—'}</b></span><span>Captador: <b style="color:#fff">${t.captador}</b></span><span>Estado: <b style="color:#fff">${t.estado==='tasado'?'Tasado':'Pendiente'}</b></span></div>
+    </div>`;
+  const chatCard=`<div class="card"><h3><span>💬</span> Conversación · captador ↔ tasador</h3>
+      <div class="chat" id="chatBox">${chatMsgs}</div>
+      <div class="chatbar">
+        <textarea id="chatInput" rows="1" placeholder="Escribe como ${role==='tas'?'tasador':'captador'}…"></textarea>
+        <button class="btn primary" onclick="addMensaje(${t.id})">Enviar</button>
+      </div>
+    </div>`;
+
+  let priceBlock;
+  if(editable){
+    priceBlock=`<div class="card"><h3><span>💶</span> Poner horquilla de precio</h3>
+      <div class="horq">
+        <div class="field"><label>Mínimo (€)</label><input id="hMin" type="number" inputmode="numeric" value="${t.hMin||''}" placeholder="0"></div>
+        <div style="padding-bottom:13px;color:var(--muted);font-weight:800">–</div>
+        <div class="field"><label>Máximo (€)</label><input id="hMax" type="number" inputmode="numeric" value="${t.hMax||''}" placeholder="0"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>Notas para el captador</label><textarea id="notas" rows="2" placeholder="Ej. tope 12.500 €, ojo pintura aleta…">${t.notas||''}</textarea></div>
+      <button class="btn green" onclick="guardarPrecio(${t.id})">💾 Guardar y avisar al captador</button></div>`;
+  }else{
+    priceBlock=t.estado==='tasado'
+      ?`<div class="card"><h3><span>💶</span> Horquilla del tasador</h3><div style="text-align:center;font-size:26px;font-weight:900;color:var(--accent2);margin:6px 0">${fmtEur(t.hMin)} – ${fmtEur(t.hMax)}</div>${t.notas?`<div class="meta" style="text-align:center">📝 ${t.notas}</div>`:''}</div>`
+      :`<div class="card"><div class="empty" style="padding:20px"><div class="big">⏳</div>El tasador aún no ha puesto precio.</div></div>`;
+  }
+
+  document.getElementById('detail').innerHTML=`
+    <div class="top" style="align-items:center;margin-bottom:14px">
+      <h2 class="title" style="margin:0">${t.marca} ${t.modelo}</h2>
+      <span class="plate">${fmtPlate(t.matricula)}</span>
+    </div>
+    ${leadCard}
+    ${dupHtml}
+    ${chatCard}
+    <div class="card"><h3><span>📸</span> Fotos</h3>${gal}<h3 style="margin-top:12px"><span>📄</span> Carfax</h3>${carfax}</div>
+    ${editable?`<a class="cochesnet" href="${cochesUrl(t)}" target="_blank" rel="noopener"><div class="cn-ico">🔍</div><div class="cn-t"><b>Ver comparables en coches.net</b><small>Filtrado por ${t.marca} ${t.modelo}, año ~${anioDe(t)||''} y km</small></div><div class="arrow">›</div></a><div style="height:14px"></div>`:''}
+    ${priceBlock}
+    <div class="card"><h3><span>📋</span> Ficha del vehículo</h3>
+      ${kv('Bastidor (VIN)',t.bastidor)}
+      ${kv('Método',t.metodo)}
+      ${kv('Fecha matriculación',fmtMonth(t.fechaMat))}
+      ${kv('Kilómetros',fmtKm(t.km))}
+      ${kv('Caja de cambios',t.cambio)}
+      ${kv('Combustible',t.combustible)}
+      ${kv('Motor',t.motor)}
+      ${kv('Potencia',t.potencia?t.potencia+' CV':'—')}
+      ${kv('Etiqueta DGT',t.etiqueta)}
+    </div>
+    <div class="card"><h3><span>🔧</span> Estado</h3>
+      ${kv('Piezas a pintar',t.piezasPintura)}
+      ${kv('Piezas de chapa',t.piezasChapa)}
+      ${kv('Neumáticos',t.neumaticos)}
+      ${kv('Nº propietarios',t.propietarios)}
+      ${kv('Nº de llaves',t.llaves)}
+      ${kv('Mantenimientos al día',t.mantAlDia)}
+      ${kv('Libro de mantenimiento',t.libroMant)}
+      ${kv('Próxima ITV',fmtMonth(t.proxItv))}
+    </div>
+    <div class="card"><h3><span>💬</span> Información comercial</h3>
+      ${kv('Idea de precio (cliente)',fmtEur(t.idea))}
+      ${kv('¿Por qué lo vende?',t.porqueVende)}
+      ${kv('Entrega del vehículo',t.entrega)}
+      ${kv('Financiado / cargas',t.financiado)}
+      ${kv('Origen del lead',t.lead)}
+      ${kv('Captador',t.captador)}
+    </div>`;
+  showView('detail');
+  const cb=document.getElementById('chatBox');if(cb)cb.scrollTop=cb.scrollHeight;
+}
+function addMensaje(id){
+  const t=db.find(x=>x.id===id);
+  const inp=document.getElementById('chatInput');
+  const txt=(inp.value||'').trim();
+  if(!txt)return;
+  if(!t.chat)t.chat=[];
+  const nombre=currentUser?currentUser.nombre:(role==='tas'?'Tasador':'Captador');
+  t.chat.push({autor:role, nombre:role==='tas'?nombre+' (tasador)':nombre, texto:txt, hora:"ahora"});
+  showDetail(id);
+}
+function guardarPrecio(id){
+  const t=db.find(x=>x.id===id);
+  const mn=parseInt(document.getElementById('hMin').value), mx=parseInt(document.getElementById('hMax').value);
+  if(!mn||!mx){toast("⚠️ Introduce mínimo y máximo");return;}
+  if(mn>mx){toast("⚠️ El mínimo no puede ser mayor");return;}
+  t.hMin=mn;t.hMax=mx;t.notas=document.getElementById('notas').value;t.estado='tasado';
+  if(!t.chat)t.chat=[];
+  t.chat.push({autor:'sys', texto:`📌 Horquilla guardada en ${t.leadRef}: ${fmtEur(mn)} – ${fmtEur(mx)}`});
+  toast("✅ Precio guardado en el LEAD");renderTasList();renderCapList();showDetail(id);
+}
+
+/* ============ Navegación ============ */
+function showView(v){document.querySelectorAll('.view').forEach(s=>s.classList.remove('on'));document.getElementById('v-'+v).classList.add('on');window.scrollTo(0,0);}
+/* ============ Go ============ */
+init();fillModelos();showView('login');
+</script>
+</body>
+</html>
