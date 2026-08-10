@@ -228,6 +228,7 @@
         </div>
       </div>
       <div class="field"><label>Origen del lead</label><input id="lead" placeholder="Ej. Wallapop, coches.net, cliente tienda, referido…"></div>
+      <div class="field"><label>URL del LEAD (CRM Flexicar)</label><input id="crmUrl" type="url" placeholder="https://…  (pega el enlace del lead en el CRM)"></div>
     </div>
 
     <!-- Vehículo -->
@@ -406,7 +407,7 @@ const MODELOS = {
 
 /* ============ Base de datos (memoria) ============ */
 let db = [
-  {id:1, matricula:"1234BCD", marca:"Volkswagen", modelo:"Golf", bastidor:"WVWZZZ1KZAW000001", metodo:"Captación", lead:"coches.net",
+  {id:1, matricula:"1234BCD", marca:"Volkswagen", modelo:"Golf", bastidor:"WVWZZZ1KZAW000001", metodo:"Captación", lead:"coches.net", crmUrl:"https://crm.flexicar.es/leads/48213",
    fechaMat:"2019-03", km:96000, cambio:"Manual", combustible:"Diésel", motor:"2.0 TDI", potencia:150, etiqueta:"C",
    piezasPintura:"2 (aleta y puerta)", piezasChapa:"0", neumaticos:"Desgaste medio (25-50%)", propietarios:2, llaves:"2",
    mantAlDia:"Sí", libroMant:"Disponible", proxItv:"2026-11", idea:13000, porqueVende:"Cambio a SUV", entrega:"En 15 días", financiado:"Libre de cargas",
@@ -416,7 +417,7 @@ let db = [
      {autor:"tas", nombre:"Tasador central", texto:"Con esos km lo veo en 12.500 € como tope. Mándame foto del bajo de la aleta antes de cerrar.", hora:"05/08 18:40"},
      {autor:"sys", texto:"📌 Horquilla guardada: 11.500 € – 12.800 €"}
    ]},
-  {id:2, matricula:"7788KLM", marca:"Seat", modelo:"Leon", bastidor:"VSSZZZ5FZLR000002", metodo:"Puerta", lead:"Wallapop",
+  {id:2, matricula:"7788KLM", marca:"Seat", modelo:"Leon", bastidor:"VSSZZZ5FZLR000002", metodo:"Puerta", lead:"Wallapop", crmUrl:"https://crm.flexicar.es/leads/48377",
    fechaMat:"2021-06", km:41000, cambio:"Manual", combustible:"Gasolina", motor:"1.5 TSI", potencia:150, etiqueta:"C",
    piezasPintura:"0", piezasChapa:"0", neumaticos:"Buen estado (50-80%)", propietarios:1, llaves:"2",
    mantAlDia:"Sí", libroMant:"Disponible", proxItv:"2027-06", idea:19000, porqueVende:"Se va al extranjero", entrega:"Inmediata", financiado:"Por confirmar",
@@ -553,7 +554,7 @@ function gather(){
   if(marca==="__otra__") marca=val('marcaLibre').trim();
   if(modelo==="__otro__"||val('marca')==="__otra__") modelo=val('modeloLibre').trim();
   return {
-    matricula:norm(val('matricula')), bastidor:val('bastidor').trim().toUpperCase(), metodo:val('metodo'), lead:val('lead'),
+    matricula:norm(val('matricula')), bastidor:val('bastidor').trim().toUpperCase(), metodo:val('metodo'), lead:val('lead'), crmUrl:val('crmUrl').trim(),
     marca, modelo, fechaMat:val('fechaMat'), km:parseInt(val('km'))||0,
     cambio:val('cambio'), combustible:val('combustible'), motor:val('motor'), potencia:parseInt(val('potencia'))||null, etiqueta:val('etiqueta'),
     piezasPintura:val('piezasPintura'), piezasChapa:val('piezasChapa'), neumaticos:val('neumaticos'),
@@ -564,7 +565,7 @@ function gather(){
   };
 }
 function limpiarFormulario(){
-  ['matricula','bastidor','lead','km','motor','potencia','piezasPintura','piezasChapa','propietarios','idea','porqueVende','entrega','marcaLibre','modeloLibre','fechaMat','proxItv'].forEach(id=>document.getElementById(id).value='');
+  ['matricula','bastidor','lead','crmUrl','km','motor','potencia','piezasPintura','piezasChapa','propietarios','idea','porqueVende','entrega','marcaLibre','modeloLibre','fechaMat','proxItv'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('marca').value='';fillModelos();
   fotosBuffer=[];carfaxBuffer=null;
   document.getElementById('thumbs').innerHTML='';document.getElementById('carfaxChip').innerHTML='';
@@ -577,7 +578,7 @@ function setSel(id,v,def){const e=document.getElementById(id); if(e) e.value=(v!
 function fillForm(t){
   const set=(id,v)=>{const e=document.getElementById(id); if(e)e.value=(v==null?'':v);};
   set('matricula',t.matricula); set('bastidor',t.bastidor); setSel('metodo',t.metodo,'Captación');
-  set('lead',t.lead); set('fechaMat',t.fechaMat); set('km',t.km||'');
+  set('lead',t.lead); set('crmUrl',t.crmUrl); set('fechaMat',t.fechaMat); set('km',t.km||'');
   setSel('cambio',t.cambio,'Manual'); setSel('combustible',t.combustible,'Gasolina');
   set('motor',t.motor); set('potencia',t.potencia||''); setSel('etiqueta',t.etiqueta,'0 (Cero)');
   set('piezasPintura',t.piezasPintura); set('piezasChapa',t.piezasChapa); setSel('neumaticos',t.neumaticos);
@@ -699,6 +700,7 @@ function showDetail(id){
         <div style="text-align:right">${t.estado==='tasado'?`<div class="lprice">${fmtEur(t.hMin)} – ${fmtEur(t.hMax)}</div><div class="lsub">horquilla guardada</div>`:`<div class="lsub">sin precio aún</div>`}</div>
       </div>
       <div class="ldiv"><span>Origen: <b style="color:#fff">${t.lead||'—'}</b></span><span>Captador: <b style="color:#fff">${t.captador}</b></span><span>Estado: <b style="color:#fff">${t.estado==='tasado'?'Tasado':'Pendiente'}</b></span></div>
+      ${t.crmUrl?`<a href="${t.crmUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:11px;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:7px 12px;border-radius:8px;text-decoration:none;font-size:12.5px;font-weight:700">🔗 Abrir LEAD en el CRM de Flexicar</a>`:''}
     </div>`;
   const chatCard=`<div class="card"><h3><span>💬</span> Conversación · captador ↔ tasador</h3>
       <div class="chat" id="chatBox">${chatMsgs}</div>
@@ -752,6 +754,7 @@ function showDetail(id){
       ${kv('Entrega del vehículo',t.entrega)}
       ${kv('Financiado / cargas',t.financiado)}
       ${kv('Origen del lead',t.lead)}
+      ${kv('LEAD en CRM', t.crmUrl?`<a href="${t.crmUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Abrir ›</a>`:'—')}
       ${kv('Captador',t.captador)}
     </div>`;
   const mediaCard=`<div class="card"><h3><span>📸</span> Fotos</h3>${gal}<h3 style="margin-top:12px"><span>📄</span> Carfax</h3>${carfax}</div>`;
